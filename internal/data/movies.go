@@ -1,6 +1,7 @@
 package data
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"github.com/agung-learns/ebook-go-further/internal/validator"
@@ -46,7 +47,11 @@ func (m MovieModel) Insert(movie *Movie) error {
 		    ($1, $2, $3, $4)
 		RETURNING id, created_at, version`
 	args := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres)}
-	return m.DB.QueryRow(query, args...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return m.DB.QueryRowContext(ctx, query, args...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
 }
 
 func (m MovieModel) Get(id int64) (*Movie, error) {
@@ -61,7 +66,10 @@ func (m MovieModel) Get(id int64) (*Movie, error) {
 
 	var movie Movie
 
-	err := m.DB.QueryRow(query, id).Scan(
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	err := m.DB.QueryRowContext(ctx, query, id).Scan(
 		&movie.ID,
 		&movie.CreatedAt,
 		&movie.Title,
@@ -86,7 +94,7 @@ func (m MovieModel) Update(movie *Movie) error {
 	query := `
 		UPDATE movies 
 		SET title=$1, year=$2, runtime=$3, genres=$4, version=version + 1
-		WHERE id = $5
+		WHERE id = $5 AND version = $6
 		RETURNING version`
 
 	args := []interface{}{
@@ -95,8 +103,13 @@ func (m MovieModel) Update(movie *Movie) error {
 		movie.Runtime,
 		pq.Array(movie.Genres),
 		movie.ID,
+		movie.Version,
 	}
-	return m.DB.QueryRow(query, args...).Scan(&movie.Version)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	return m.DB.QueryRowContext(ctx, query, args...).Scan(&movie.Version)
 }
 
 func (m MovieModel) Delete(id int64) error {
@@ -106,7 +119,10 @@ func (m MovieModel) Delete(id int64) error {
 
 	query := `DELETE FROM movies WHERE id = $1`
 
-	result, err := m.DB.Exec(query, id)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	result, err := m.DB.ExecContext(ctx, query, id)
 	if err != nil {
 		return err
 	}
