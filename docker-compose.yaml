@@ -1,0 +1,17 @@
+version: '3'
+
+services:
+  db:
+    container_name: "go-apilearn-db"
+    image: postgres:16.2-alpine
+    ports:
+      - "5432:5432"
+    volumes:
+      - go-apilearn-db-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=apilearn_password
+      - POSTGRES_USER=apilearn_user
+      - POSTGRES_DB=apilearn_db
+
+volumes:
+  go-apilearn-db-data: {}
