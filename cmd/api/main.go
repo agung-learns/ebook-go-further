@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"flag"
 	"fmt"
+	"github.com/agung-learns/ebook-go-further/internal/data"
 	_ "github.com/lib/pq"
 	"log"
 	"net/http"
@@ -28,6 +29,7 @@ type config struct {
 type application struct {
 	logger *log.Logger
 	config config
+	models data.Models
 }
 
 func main() {
@@ -52,6 +54,7 @@ func main() {
 	app := application{
 		logger: logger,
 		config: cfg,
+		models: data.NewModels(db),
 	}
 
 	srv := &http.Server{
