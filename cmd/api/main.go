@@ -6,8 +6,8 @@ import (
 	"flag"
 	"fmt"
 	"github.com/agung-learns/ebook-go-further/internal/data"
+	"github.com/agung-learns/ebook-go-further/internal/jsonlog"
 	_ "github.com/lib/pq"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -27,7 +27,7 @@ type config struct {
 }
 
 type application struct {
-	logger *log.Logger
+	logger *jsonlog.Logger
 	config config
 	models data.Models
 }
@@ -43,13 +43,14 @@ func main() {
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
 	flag.Parse()
 
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
 	db, err := openDB(cfg)
 	if err != nil {
-		logger.Fatal(err)
+		logger.PrintFatal(err, nil)
 	}
 	defer db.Close()
+	logger.PrintInfo("database connection pool established", nil)
 
 	app := application{
 		logger: logger,
@@ -65,9 +66,12 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	logger.Printf("starting server on port %d", cfg.port)
+	logger.PrintInfo("starting server on port %d", map[string]string{
+		"addr": srv.Addr,
+		"env":  cfg.env,
+	})
 	err = srv.ListenAndServe()
-	logger.Fatal(err)
+	logger.PrintFatal(err, nil)
 }
 
 func openDB(cfg config) (*sql.DB, error) {
