@@ -6,8 +6,10 @@ import (
 	"flag"
 	"github.com/agung-learns/ebook-go-further/internal/data"
 	"github.com/agung-learns/ebook-go-further/internal/jsonlog"
+	"github.com/agung-learns/ebook-go-further/internal/mailer"
 	_ "github.com/lib/pq"
 	"os"
+	"sync"
 	"time"
 )
 
@@ -27,12 +29,21 @@ type config struct {
 		burst   int
 		enabled bool
 	}
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
 }
 
 type application struct {
 	logger *jsonlog.Logger
 	config config
 	models data.Models
+	mailer mailer.Mailer
+	wg     sync.WaitGroup
 }
 
 func main() {
@@ -49,6 +60,12 @@ func main() {
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
 
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "sandbox.smtp.mailtrap.io", "SMTP host")
+	flag.IntVar(&cfg.smtp.port, "smtp-port", 25, "SMTP port")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "42730f78202ad6", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "116fcda2659b10", "SMTP password")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Greenlight <no-reply@example.com>", "SMTP sender")
+
 	flag.Parse()
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
@@ -64,6 +81,13 @@ func main() {
 		logger: logger,
 		config: cfg,
 		models: data.NewModels(db),
+		mailer: mailer.New(
+			cfg.smtp.host,
+			cfg.smtp.port,
+			cfg.smtp.username,
+			cfg.smtp.password,
+			cfg.smtp.sender,
+		),
 	}
 
 	err = app.serve()
