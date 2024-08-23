@@ -18,7 +18,7 @@ type User struct {
 	CreatedAt time.Time `json:"created_at"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
-	Password  password  `json:"password"`
+	Password  password  `json:"-"`
 	Activated bool      `json:"activated"`
 	Version   int       `json:"version"`
 }
@@ -143,8 +143,8 @@ func (m *UserModel) GetByEmail(email string) (*User, error) {
 func (m *UserModel) Update(user *User) error {
 	query := `
 		UPDATE users
-		SET name = $1, email = $2, password_hash = $3, activated = $4, version = version + 1
-		WHERE id = $5 AND activated = $6
+		SET name = $1, email = $2, password_hash = $3, activated = $4
+		WHERE id = $5 AND version = $6
 		RETURNING version
 	`
 
@@ -173,4 +173,38 @@ func (m *UserModel) Update(user *User) error {
 	}
 
 	return nil
+}
+
+func (m *UserModel) GetForToken(tokenScope, tokenPlainText string) (*User, error) {
+	query := `
+		SELECT users.id, users.created_at, users.name, users.email, users.password_hash, users.activated, users.version 
+		FROM users
+		INNER JOIN tokens ON users.id = tokens.user_id
+		WHERE tokens.scope = $1 AND tokens.hash = $2
+	`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var user User
+	err := m.DB.QueryRowContext(ctx, query, tokenScope, tokenPlainText).Scan(
+		&user.ID,
+		&user.CreatedAt,
+		&user.Name,
+		&user.Email,
+		&user.Password.hash,
+		&user.Activated,
+		&user.Version,
+	)
+
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return &user, nil
 }
