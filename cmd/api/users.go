@@ -50,6 +50,12 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	err = app.models.Permissions.AddForUser(user.ID, "movies:read")
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+
 	token, err := app.models.Tokens.New(user.ID, 3*24*time.Hour, data.ScopeActivation)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
@@ -57,9 +63,12 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	app.background(func() {
-		err = app.mailer.Send(user.Email, "user_welcome", map[string]interface{}{
-			"activationToken": token.PlainText,
-			"userID":          user.ID,
+		//err = app.mailer.Send(user.Email, "user_welcome", map[string]interface{}{
+		//	"activationToken": token.PlainText,
+		//	"userID":          user.ID,
+		//})
+		app.logger.PrintInfo("token", map[string]string{
+			"token": token.PlainText,
 		})
 		if err != nil {
 			app.logger.PrintError(err, nil)
