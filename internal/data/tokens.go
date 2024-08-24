@@ -36,7 +36,7 @@ func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error
 		return nil, err
 	}
 
-	token.PlainText = base32.StdEncoding.WithPadding(base32.StdPadding).EncodeToString(randomBytes)
+	token.PlainText = base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(randomBytes)
 	hash := sha256.Sum256([]byte(token.PlainText))
 	token.Hash = hash[:]
 
@@ -45,7 +45,7 @@ func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error
 
 func ValidateTokenPlainText(v *validator.Validator, tokenPlainText string) {
 	v.Check(tokenPlainText != "", "token", "must be provided")
-	//v.Check(len(tokenPlainText) == 26, "token", "must be longer than 26 bytes")
+	v.Check(len(tokenPlainText) == 26, "token", "must be longer than 26 bytes")
 }
 
 type TokenModel struct {
@@ -66,8 +66,7 @@ func (m *TokenModel) Insert(token *Token) error {
 		INSERT INTO tokens (hash, user_id, expiry, scope)
 		VALUES ($1, $2, $3, $4)
 	`
-
-	args := []interface{}{token.Hash, token.UserID, token.Expiry, token.Scope}
+	args := []interface{}{token.PlainText, token.UserID, token.Expiry, token.Scope}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
