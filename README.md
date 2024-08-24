@@ -18,3 +18,5 @@ https://lets-go-further.alexedwards.net/
 - [Section 14](https://github.com/agung-learns/ebook-go-further/tree/feature/section-14)
 - [Section 15](https://github.com/agung-learns/ebook-go-further/tree/feature/section-15)
 - [Section 16](https://github.com/agung-learns/ebook-go-further/tree/feature/section-16)
+- [Section 17](https://github.com/agung-learns/ebook-go-further/tree/feature/section-17)
+- [Section 18](https://github.com/agung-learns/ebook-go-further/tree/feature/section-18)
