@@ -69,7 +69,7 @@ vendor:
 # ==================================================================================== #
 
 current_time := $(shell date +"%Y-%m-%dT%H:%M:%S%z")
-git_description := $(shell git describe --always --dirty)
+git_description := $(shell git describe --always --tags --long)
 
 linker_flags := '-s -X main.buildTime=${current_time} -X main.version=${git_description}'
 
