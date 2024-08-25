@@ -25,5 +25,8 @@
 go.work
 
 .idea/
+.envrc
+
+bin/
 
 # End of https://www.toptal.com/developers/gitignore/api/go
