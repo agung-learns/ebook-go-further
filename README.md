@@ -20,3 +20,7 @@ https://lets-go-further.alexedwards.net/
 - [Section 16](https://github.com/agung-learns/ebook-go-further/tree/feature/section-16)
 - [Section 17](https://github.com/agung-learns/ebook-go-further/tree/feature/section-17)
 - [Section 18](https://github.com/agung-learns/ebook-go-further/tree/feature/section-18)
+- [Section 19](https://github.com/agung-learns/ebook-go-further/tree/feature/section-19)
+- [Section 20](https://github.com/agung-learns/ebook-go-further/tree/feature/section-20)
+- [Section 21](https://github.com/agung-learns/ebook-go-further/tree/feature/section-21)
+- [Section 22](https://github.com/agung-learns/ebook-go-further/tree/feature/section-22)
