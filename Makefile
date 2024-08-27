@@ -23,7 +23,7 @@ confirm:
 ## run/api: run the cmd/api application
 .PHONY: run/api
 run/api:
-	go run ./cmd/api -db-dsn=${DB_DSN}
+	go run ./cmd/api -db-dsn=${DB_DSN} -jwt-secret=${JWT_SECRET}
 
 ## db/migrations/new name=$1: create a new database migration
 .PHONY: db/migrations/new
